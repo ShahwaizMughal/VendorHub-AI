@@ -1,9 +1,16 @@
-require("dotenv").config();
+const app = require('./app');
+const connectDB = require('./config/db');
+const env = require('./config/env');
 
-const app = require("./app");
+const startServer = async () => {
+  await connectDB();
+  app.listen(env.PORT, () => {
+    console.log(`VendorHub AI Server running on port ${env.PORT} in ${env.NODE_ENV} mode`);
+  });
+};
 
-const PORT = process.env.PORT || 5000;
+if (require.main === module) {
+  startServer();
+}
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-});
+module.exports = app;
