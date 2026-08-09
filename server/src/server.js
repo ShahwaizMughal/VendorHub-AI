@@ -1,4 +1,6 @@
-require("dotenv").config();
+const app = require('./app');
+const connectDB = require('./config/db');
+const env = require('./config/env');
 
 const mongoose = require("mongoose");
 const app = require("./app");
@@ -31,3 +33,15 @@ start().catch(error => {
   console.error("Server startup failed:", error.message);
   process.exit(1);
 });
+const startServer = async () => {
+  await connectDB();
+  app.listen(env.PORT, () => {
+    console.log(`VendorHub AI Server running on port ${env.PORT} in ${env.NODE_ENV} mode`);
+  });
+};
+
+if (require.main === module) {
+  startServer();
+}
+
+module.exports = app;
