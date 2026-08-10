@@ -1,47 +1,34 @@
-const app = require('./app');
-const connectDB = require('./config/db');
-const env = require('./config/env');
+const dns = require('dns');
+dns.setServers(['8.8.8.8', '8.8.4.4']);
+require('dotenv').config();
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+const app = express();
+const PORT = process.env.PORT || 5000;
+app.use(cors());
+app.use(express.json());
 
-const mongoose = require("mongoose");
-const app = require("./app");
+const favoriteRoutes = require('./routes/favorite.routes');
+app.use('/api/favorites', favoriteRoutes);
 
-const PORT = Number(process.env.PORT || 5000);
+const searchRoutes = require('./routes/search.routes');
+app.use('/api/search', searchRoutes);
 
-async function start() {
-  if (!process.env.MONGO_URI) throw new Error("MONGO_URI is required");
+const fakeAuth = require('./middleware/fakeAuth');
+const searchController = require('./controllers/search.controller');
+app.get('/api/dashboard/buyer', fakeAuth, searchController.getBuyerDashboard);
 
-  await mongoose.connect(process.env.MONGO_URI);
-  console.log("MongoDB connected");
-
-  const server = app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
-
-  const shutdown = async signal => {
-    console.log(`${signal} received. Shutting down...`);
-    server.close(async () => {
-      await mongoose.connection.close();
-      process.exit(0);
-    });
-  };
-
-  process.on("SIGINT", () => shutdown("SIGINT"));
-  process.on("SIGTERM", () => shutdown("SIGTERM"));
-}
-
-start().catch(error => {
-  console.error("Server startup failed:", error.message);
-  process.exit(1);
+app.get('/api/health', (req, res) => {
+  res.json({ success: true, message: 'Server is running' });
 });
-const startServer = async () => {
-  await connectDB();
-  app.listen(env.PORT, () => {
-    console.log(`VendorHub AI Server running on port ${env.PORT} in ${env.NODE_ENV} mode`);
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => {
+    console.log('MongoDB connected successfully');
+    app.listen(PORT, () => {
+      console.log(`Server running on http://localhost:${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error('MongoDB connection error:', err);
   });
-};
-
-if (require.main === module) {
-  startServer();
-}
-
-module.exports = app;
