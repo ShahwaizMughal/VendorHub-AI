@@ -1,7 +1,6 @@
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { v4: uuidv4 } = require('crypto');
 const User = require('../models/User');
 const env = require('../config/env');
 const { ROLES } = require('../../../shared/constants');
@@ -207,7 +206,7 @@ const refresh = async (req, res, next) => {
     let decoded;
     try {
       decoded = jwt.verify(refreshToken, env.JWT_REFRESH_SECRET);
-    } catch (err) {
+    } catch {
       res.clearCookie('refreshToken');
       return res.status(401).json({
         success: false,

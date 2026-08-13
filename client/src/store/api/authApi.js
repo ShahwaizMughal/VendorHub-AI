@@ -32,7 +32,7 @@ export const authApi = createApi({
               })
             );
           }
-        } catch (err) {
+        } catch {
           // Handled in component
         }
       }
@@ -95,7 +95,7 @@ export const authApi = createApi({
           if (data?.data?.user) {
             dispatch(setCredentials({ user: data.data.user }));
           }
-        } catch (err) {
+        } catch {
           // Error handled in app initializer
         }
       }
@@ -114,7 +114,7 @@ export const authApi = createApi({
           if (data?.data?.user) {
             dispatch(setCredentials({ user: data.data.user }));
           }
-        } catch (err) {
+        } catch {
           // Handled in component
         }
       }
@@ -140,7 +140,7 @@ export const authApi = createApi({
           if (data?.data?.user) {
             dispatch(setCredentials({ user: data.data.user }));
           }
-        } catch (err) {
+        } catch {
           // Handled in component
         }
       }
@@ -173,7 +173,7 @@ export const authApi = createApi({
           if (data?.data?.user) {
             dispatch(setCredentials({ user: data.data.user }));
           }
-        } catch (err) {
+        } catch {
           // Handled in component
         }
       }

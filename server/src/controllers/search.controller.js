@@ -10,7 +10,7 @@ const mockVendors = [
 ];
 
 // Fake AI ranking function until Dev 6's real aiService.rank() is ready
-function fakeAiRank(vendors, query) {
+function fakeAiRank(vendors, _query) {
   return vendors.map(v => ({
     ...v,
     matchScore: Math.floor(Math.random() * 40) + 60, // random score 60-100
@@ -59,7 +59,7 @@ exports.aiSearch = async (req, res) => {
     let ranked;
     try {
       ranked = fakeAiRank(candidates, trimmedQuery);
-    } catch (aiErr) {
+    } catch {
       // Fallback: sort by rating if "AI" fails
       ranked = candidates.sort((a, b) => b.rating - a.rating);
     }

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useVerifyEmailMutation } from '../../../store/api/authApi';
 import { AuthCard } from '../components/AuthCard';

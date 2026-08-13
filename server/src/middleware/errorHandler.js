@@ -1,42 +1,55 @@
-function errorHandler(error, req, res, next) {
-  if (res.headersSent) return next(error);
+const errorHandler = (err, req, res, next) => {
+  if (res.headersSent) return next(err);
 
-  if (error?.name === "ValidationError") {
+  // Mongoose validation error -> map to the standard fields envelope.
+  if (err?.name === 'ValidationError' && err.errors) {
+    const fields = {};
+    Object.values(err.errors).forEach((item) => {
+      fields[item.path] = item.message;
+    });
     return res.status(400).json({
       success: false,
-      message: "Validation failed",
-      errors: Object.values(error.errors).map(item => item.message),
+      error: { code: 'VALIDATION_ERROR', message: 'Validation failed', fields }
     });
   }
 
-  if (error?.name === "CastError") {
-    return res.status(400).json({ success: false, message: `Invalid ${error.path}` });
+  // Mongoose bad ObjectId
+  if (err?.name === 'CastError') {
+    return res.status(400).json({
+      success: false,
+      error: { code: 'VALIDATION_ERROR', message: `Invalid ${err.path}` }
+    });
   }
 
-  if (error?.code === 11000) {
-    return res.status(409).json({ success: false, message: "A resource with the same unique value already exists" });
+  // Mongo duplicate key
+  if (err?.code === 11000) {
+    const field = Object.keys(err.keyValue || {})[0] || 'field';
+    return res.status(409).json({
+      success: false,
+      error: {
+        code: 'CONFLICT',
+        message: `A record with this ${field} already exists`,
+        fields: { [field]: 'Already in use' }
+      }
+    });
   }
 
-  const status = Number(error?.statusCode) || 500;
-  if (status >= 500) console.error(error);
-
-  return res.status(status).json({
-    success: false,
-    message: status >= 500 ? "Internal server error" : error.message,
-    ...(error.details ? { errors: error.details } : {}),
-  });
-}
-const errorHandler = (err, req, res, next) => {
   const statusCode = err.statusCode || (res.statusCode >= 400 ? res.statusCode : 500);
-  
+
   const response = {
     success: false,
     error: {
       code: err.code || (statusCode === 422 ? 'VALIDATION_ERROR' : 'INTERNAL_SERVER_ERROR'),
-      message: err.message || 'An unexpected error occurred',
+      message: statusCode >= 500 && process.env.NODE_ENV === 'production'
+        ? 'Internal server error'
+        : (err.message || 'An unexpected error occurred'),
       ...(err.fields && { fields: err.fields })
     }
   };
+
+  if (statusCode >= 500) {
+    console.error(err);
+  }
 
   if (process.env.NODE_ENV !== 'production' && statusCode === 500) {
     response.error.stack = err.stack;

@@ -1,7 +1,7 @@
 const Joi = require('joi');
 const { ROLES } = require('../../../shared/constants');
 
-const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
+const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/;
 const passwordMessage = 'Password must be at least 8 characters long, contain at least 1 uppercase letter, 1 number, and 1 symbol';
 
 const registerSchema = Joi.object({
